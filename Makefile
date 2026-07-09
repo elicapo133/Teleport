@@ -1,4 +1,3 @@
 
 bin/tpbin: src/*.go
-	go build -o $@ src/*.go
-
+	GO111MODULE=off go build -o $@ src/*.go

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 )
 
 // 0 = cd to there, 1 = Print but no error, 2 = Print with error
@@ -16,15 +17,15 @@ const (
 var (
 	LocationsDirectory string
 	TemporaryFile      string = "/tmp/tp"
-    BeingPiped         bool
+	BeingPiped         bool
 )
 
 func main() {
-    if os.Getenv("TP_BEING_PIPED") == "1" {
-        BeingPiped = true
-    } else {
-        BeingPiped = false
-    }
+	if os.Getenv("TP_BEING_PIPED") == "1" {
+		BeingPiped = true
+	} else {
+		BeingPiped = false
+	}
 
 	currentUser, err := user.Current()
 	if err != nil {
@@ -39,7 +40,6 @@ func main() {
 			die("Failed to create locations directory: " + err.Error())
 		}
 	}
-
 
 	// Check if LocationsDirectory exists
 	if _, err := os.Stat(LocationsDirectory); err != nil {
@@ -67,7 +67,11 @@ func main() {
 	case "-c":
 		switch n := len(os.Args); n {
 		case 2:
-			die("Bad usage, try 'tp -h'")
+			wd, err := os.Getwd()
+			if err != nil {
+				die("Could not get working directory :(")
+			}
+			createLocation(filepath.Base(wd), wd)
 		case 3:
 			wd, err := os.Getwd()
 			if err != nil {
@@ -88,13 +92,13 @@ func main() {
 		if len(os.Args) > 2 {
 			removeLocation(os.Args[2:])
 		} else {
-            if exists(TemporaryFile) {
-                err := os.Remove(TemporaryFile)
-                if err != nil {
-                    die(err.Error())
-                }
-                os.Exit(ExitSuccess)
-            }
+			if exists(TemporaryFile) {
+				err := os.Remove(TemporaryFile)
+				if err != nil {
+					die(err.Error())
+				}
+				os.Exit(ExitSuccess)
+			}
 		}
 
 	case "-p":
@@ -122,6 +126,6 @@ func main() {
 		os.Exit(ExitError)
 	}
 
-    os.Exit(ExitSuccess)
+	os.Exit(ExitSuccess)
 
 }
